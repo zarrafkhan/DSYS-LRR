@@ -5,6 +5,7 @@ import java.io.*;
 class MyClient{  
 public static void main(String args[])throws Exception{  
 
+String name = System.getProperty("user.name");
 String mess = ""; //last message
 String[] minfo; //specfic information from last message
 
@@ -24,7 +25,7 @@ BufferedReader bin = new BufferedReader(new InputStreamReader(s.getInputStream()
 //basic server exchanges
 dout.write(("HELO\n").getBytes());
 bin.readLine();
-dout.write(("AUTH zeek\n").getBytes());
+dout.write(("AUTH " + name + " \n").getBytes());
 bin.readLine();
 
 dout.write(("REDY\n").getBytes());      
@@ -34,13 +35,14 @@ jobID = minfo[2];
 //Sends GETS Capable Core/Memory/Disk
 dout.write(("GETS Capable " + minfo[4] + " " + minfo[5] + " " + minfo[6] + " \n").getBytes()); 
 recs = bin.readLine().split(" "); //DATA nRecs Size
-int nRecs = Integer.parseInt(recs[1]);
+int nRecs = Integer.parseInt(recs[1]); 
 dout.write(("OK\n").getBytes());   
 
-String[] d = bin.readLine().split("\n"); //Server state info
-for(int i =0; i< nRecs; i++){ //for each record store into list
-    data.add(d[i].split(" "));
+//STORE into list
+for (int i = 0; i< nRecs;i++){
+    data.add(bin.readLine().split(" "));
 }
+
 
 //FIND LARGEST type based on core size
 ltype = data.get(0)[0];
@@ -50,31 +52,50 @@ for (int i =1; i< nRecs; i++){
     }
 }
 
-for (String[] a: data){ //acquire largest server count
+for (String[] a: data){ //count largest server 
     if (a[0].equals(ltype)){
         lnum++;
     }
 }
 
 
+
 dout.write(("OK\n").getBytes());  
 bin.readLine(); 
+int val = 0;
 
-while( !(mess.equals("NONE\n")) ){
-
+while(true){
     if (mess.startsWith("JOBN")){        
-        dout.write(("SCHD " + jobID + " " + ltype + "\n").getBytes());   //iterate through 0 to (lnum-1)
+        dout.write(("SCHD " + jobID + " " + ltype + " " + val + " \n").getBytes());   //iterate through 0 to (lnum-1)
+        val+=1;
+        if (val >= lnum){
+            val = 0;
+        }
 
-        dout.write(("REDY\n").getBytes());      
-        mess = bin.readLine(); 
+        bin.readLine();
+        dout.write(("REDY\n").getBytes());   
+        mess = bin.readLine();
+        
+         while (mess.startsWith("JCPL")){   
+             dout.write(("REDY\n").getBytes());  
+             mess = bin.readLine();
+         }
+
+        if (mess.startsWith("NONE")){
+            break;
+        }
+
         minfo = mess.split(" "); 
         jobID = minfo[2];
         dout.write(("GETS Capable " + minfo[4] + " " + minfo[5] + " " + minfo[6] + " \n").getBytes()); 
-        bin.readLine();
+        recs = bin.readLine().split(" "); //DATA nRecs Size
+        nRecs = Integer.parseInt(recs[1]); 
+        dout.write(("OK\n").getBytes());  
+         for (int i = 0; i< nRecs;i++){
+             bin.readLine();
+         }
         dout.write(("OK\n").getBytes());  
         bin.readLine();
-        dout.write(("OK\n").getBytes());  
-        bin.readLine();  
     }
 }
 
@@ -93,7 +114,6 @@ s.close();
 
 /************************ 
 NOTES
-
 
 */
 
