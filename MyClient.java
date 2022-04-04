@@ -25,7 +25,7 @@ BufferedReader bin = new BufferedReader(new InputStreamReader(s.getInputStream()
 //basic server exchanges
 dout.write(("HELO\n").getBytes());
 bin.readLine();
-dout.write(("AUTH " + name + " \n").getBytes());
+dout.write(("AUTH " + name + "\n").getBytes());
 bin.readLine();
 
 dout.write(("REDY\n").getBytes());      
@@ -66,7 +66,7 @@ int val = 0;
 
 while(true){
     if (mess.startsWith("JOBN")){        
-        dout.write(("SCHD " + jobID + " " + ltype + " " + val + " \n").getBytes());   //iterate through 0 to (lnum-1)
+        dout.write(("SCHD " + jobID + " " + ltype + " " + val + "\n").getBytes());   //iterate through 0 to (lnum-1)
         val+=1;
         if (val >= lnum){
             val = 0;
@@ -87,7 +87,7 @@ while(true){
 
         minfo = mess.split(" "); 
         jobID = minfo[2];
-        dout.write(("GETS Capable " + minfo[4] + " " + minfo[5] + " " + minfo[6] + " \n").getBytes()); 
+        dout.write(("GETS Capable " + minfo[4] + " " + minfo[5] + " " + minfo[6] + "\n").getBytes()); 
         recs = bin.readLine().split(" "); //DATA nRecs Size
         nRecs = Integer.parseInt(recs[1]); 
         dout.write(("OK\n").getBytes());  
@@ -111,9 +111,4 @@ s.close();
 }
 
 
-
-/************************ 
-NOTES
-
-*/
 
